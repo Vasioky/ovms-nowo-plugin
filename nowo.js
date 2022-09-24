@@ -5,7 +5,9 @@
 	var i = 0;
 	var isRev = false;
     var requireResend = false;
+	
 	function cleanup(){
+		print("cleanup");
 		i = 0;
 		isRev = false;
 		requireResend = false;
@@ -24,7 +26,14 @@
 			cleanup();
 		}
 	}
-
+    function resendCommand(){
+		if(requireResend){
+			print("resend: wait");
+			for(var j=0; j++<20;);//need to wait 
+			print("resend");
+			sendCommand();
+		}
+	}
 	PubSub.subscribe('vehicle.off', function(){
 		cleanup();
 	});
@@ -37,22 +46,19 @@
 		});
 		PubSub.subscribe('vehicle.gear.neutral', function(){
 			print('neutral');
-			if(requireResend){
-				sendCommand();
-			}
-			isRev = false;
+			resendCommand();
 		});
 		PubSub.subscribe('vehicle.gear.forward', function(){
 			print('forward');
-			if(requireResend){
-				sendCommand();
-			}
-			isRev = false;
+			resendCommand();
 		});
 		PubSub.subscribe(eventName , function(){
+			print("event: " + eventName);
 			if(!isRev){
+				print(eventName + ": send command");
 				sendCommand();
 			} else {
+				print('requireResend: true');
 				requireResend = true;
 			}
 		});
