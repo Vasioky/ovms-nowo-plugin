@@ -5,16 +5,22 @@
 	var i = 0;
 	var isRev = false;
     var requireResend = false;
-	
+	var vgrEventId  = null;
+	var vgnEventId = null;
+	var vgfEbentId = null;
+
 	function cleanup(){
 		print("cleanup");
 		i = 0;
 		isRev = false;
 		requireResend = false;
 		PubSub.unsubscribe(eventName);
-		PubSub.unsubscribe('vehicle.gear.reverse');
-		PubSub.unsubscribe('vehicle.gear.forward');
-		PubSub.unsubscribe('vehicle.gear.neutral');
+		PubSub.unsubscribe(vgrEventId);
+		PubSub.unsubscribe(vgnEventId);
+		PubSub.unsubscribe(vgfEbentId);
+		vgfEbentId = null;
+		vgnEbentId = null;
+		vgrEbentId = null;
 	}
 
 	function sendCommand(){
@@ -34,24 +40,26 @@
 			sendCommand();
 		}
 	}
-	PubSub.subscribe('vehicle.off', function(){
-		cleanup();
-	});
 
-	PubSub.subscribe('vehicle.on', function(){
+	function carOff(){
+		cleanup();
+	}
+
+	function carOn(){
 		print('vehicle.on');
-		PubSub.subscribe('vehicle.gear.reverse', function(){
+		vgrEventId = PubSub.subscribe('vehicle.gear.reverse', function(){
 			print('reverse');
 			isRev = true;
 		});
-		PubSub.subscribe('vehicle.gear.neutral', function(){
+		vgnEventId = PubSub.subscribe('vehicle.gear.neutral', function(){
 			print('neutral');
 			resendCommand();
 		});
-		PubSub.subscribe('vehicle.gear.forward', function(){
+		vgfEventId = PubSub.subscribe('vehicle.gear.forward', function(){
 			print('forward');
 			resendCommand();
 		});
+
 		PubSub.subscribe(eventName , function(){
 			print("event: " + eventName);
 			if(!isRev){
@@ -65,7 +73,14 @@
 		
 		// start timeout:
 		OvmsEvents.Raise(eventName , 11000);
-	});
+	}
+
+	PubSub.subscribe('vehicle.off', carOff);
+
+	PubSub.subscribe('vehicle.on', carOn);
+
 	exports.hideOk = sendCommand;
+	exports.carOff = carOff;
+	exports.carOn = carOn;
 	return exports;
 })();
