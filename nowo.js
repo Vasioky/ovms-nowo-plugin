@@ -1,5 +1,6 @@
 (function(){
 	print('nowo start');
+	var exports = {};
 	var eventName = 'usr.nowo.timeout';
 	var i = 0;
 	var isRev = false;
@@ -59,4 +60,6 @@
 		// start timeout:
 		OvmsEvents.Raise(eventName , 11000);
 	});
+	exports.hideOk = sendCommand;
+	return exports;
 })();
